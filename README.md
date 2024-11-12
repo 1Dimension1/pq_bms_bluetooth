@@ -6,7 +6,7 @@ Main purpose is to read battery stats from BMS.
 > The code does not make any changes or change any settings in BMS of battery. Only reading information.
 
 > [!WARNING]  
-> **This is unofficial PowerQueen library. Use at your own risc.**  
+> **This is unofficial PowerQueen library. Use at your own risk.**  
 
 ## Installation
 
@@ -14,7 +14,7 @@ Clone and create python virtual environment
 
 ```
 git clone https://github.com/dmytro-tsepilov/pq_bms_bluetooth.git
-cd ./pq_bms_bluetooth
+cd pq_bms_bluetooth
 python -m venv venv
 source venv/bin/activate
 ```
@@ -27,18 +27,25 @@ pip install -r requirements.txt
 
 ## Usage
 
-Find Bluetooth MAC address of your battery.
-On linux it is possible to do with `bluez` tool.
+Find the Bluetooth MAC address of your battery.
+On linux it is possible with the `bluez` tool.
 
 ```
-sudo apt install bluez
+sudo apt update
+sudo apt install bluez -y
 ```
 
-Start bluetooth tool `bluetoothctl` and scan for available bluetooth devices `scan on`.
-<br>Once it find some devices and shows the list, stop scanning with command `scan off`
+Start bluetooth tool:\
+`bluetoothctl`
+
+Scan for available bluetooth devices:\
+ `scan on`
+
+Once it finds some devices and shows the list, stop scanning with command:\
+`scan off`
 
 > [!NOTE]  
-> There is no need to *Trust*, *Pair* or *Connect* to battery via `bluez`. Just find MAC address of battery.
+> There is no need to *Trust*, *Pair* or *Connect* to battery via `bluez`. Just find the MAC address of the battery.
 
 <span style="color:blue">[bluetooth]</span># scan on
 <br>Discovery started
@@ -136,3 +143,4 @@ Software:
 
 Hardware:
 - Power Queen LiFePO4 12V 100A
+- Power Queen LiFePO4 25.6V 100A
