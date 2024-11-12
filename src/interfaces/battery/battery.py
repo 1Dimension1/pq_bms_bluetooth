@@ -5,6 +5,7 @@ import logging
 from bluetooth.request import Request
 from constants import BMS_CHARACTERISTIC_ID, pq_commands
 
+
 class BatteryInfo:
     '''
     Class parse BMS information from PowerQueen LiFePO4 battery over bluetooth
@@ -12,6 +13,11 @@ class BatteryInfo:
     Attributes:
         logger (str): Instance of python logger.
     '''
+
+    def __init__(self, 
+                 bluetooth_device_mac: str,
+                 pair_device: bool = False,
+                 logger=None):
         self.packVoltage = None
         self.voltage = None
         self.batteryPack: dict = {}
@@ -35,7 +41,7 @@ class BatteryInfo:
         self.manfactureDate = None
         self.hardwareVersion = None
 
-        ## Human readable battery status
+        # Human readable battery status
         self.battery_status = None
         self.balance_status = None
         self.cell_status = None
@@ -64,12 +70,12 @@ class BatteryInfo:
           Function read BMS info via bluetooth using bleak client
         '''
         asyncio.run(self._request.bulk_send(
-            characteristic_id = self.BMS_CHARACTERISTIC_ID,
-            commands_parsers = {
-                self.pq_commands["GET_VERSION"]: self.parse_version,
-                self.pq_commands["GET_BATTERY_INFO"]: self.parse_battery_info,
-                ## Internal SN not used or not implemented
-                ## self.pq_commands["SERIAL_NUMBER"]: self.parse_serial_number
+            characteristic_id=BMS_CHARACTERISTIC_ID,
+            commands_parsers={
+                pq_commands["GET_VERSION"]: self.parse_version,
+                pq_commands["GET_BATTERY_INFO"]: self.parse_battery_info,
+                # Internal SN not used or not implemented
+                # self.pq_commands["SERIAL_NUMBER"]: self.parse_serial_number
             }
         ))
 
@@ -104,23 +110,22 @@ class BatteryInfo:
             self.batteryPack[cell] = cellVoltage/1000
             cell += 1
 
-        ## Load \ Unload current A
+        # Load \ Unload current A
         current = int.from_bytes(data[48:52][::-1], byteorder='big', signed=True)
         self.current = round(current / 1000, 2)
 
-        ## Calculated load \ unload Watt
+        # Calculated load \ unload Watt
         self.watt = round((self.voltage * +current) / 10000, 1) / 100
 
-        ## Remain Ah
+        # Remain Ah
         remainAh = int.from_bytes(data[62:64][::-1], byteorder='big')
         self.remainAh = round(remainAh/100, 2)
 
-        ## Factory Ah
+        # Factory Ah
         fccAh = int.from_bytes(data[64:66][::-1], byteorder='big')
         self.factoryAh = round(fccAh/100, 2)
 
-        ## Temperature
-        s = pow(2, 16)
+        # Temperature
         self.cellTemperature = int.from_bytes(data[52:54][::-1], byteorder='big')
         self.mosfetTemperature = int.from_bytes(data[54:56][::-1], byteorder='big')
 
@@ -131,18 +136,18 @@ class BatteryInfo:
         self.equilibriumState = int.from_bytes(data[84:88][::-1], byteorder='big')
         self.batteryState = int.from_bytes(data[88:90][::-1], byteorder='big')
 
-        ## Charge level
+        # Charge level
         self.SOC = int.from_bytes(data[90:92][::-1], byteorder='big')
 
-        ## Battery Status ??
+        # Battery Status ??
         self.SOH = int.from_bytes(data[92:96][::-1], byteorder='big')
 
         self.dischargesCount = int.from_bytes(data[96:100][::-1], byteorder='big')
 
-        ## Discharge AH times
+        # Discharge AH times
         self.dischargesAHCount = int.from_bytes(data[100:104][::-1], byteorder='big')
 
-        ## Additional human readable statuses
+        # Additional human readable statuses
         self.battery_status = self.get_battery_status()
 
         if self.equilibriumState > 0:
@@ -154,7 +159,6 @@ class BatteryInfo:
             self.cell_status = "Fault alert! There may be a problem with cell."
         else:
             self.cell_status = "Battery is in optimal working condition."
-
 
     def parse_version(self, data):
         '''
@@ -169,7 +173,7 @@ class BatteryInfo:
                                f"-{int(start[9])}")
 
         vers = ""
-        #rawV = data[0:8]
+        # rawV = data[0:8]
         for ver in start[0::2]:
             if 32 <= ver <= 126:
                 vers += chr(ver)
