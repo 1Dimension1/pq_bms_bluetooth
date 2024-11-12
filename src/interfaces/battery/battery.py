@@ -3,7 +3,7 @@ import asyncio
 import logging
 
 from interfaces.bluetooth.request import Request
-from constants import BMS_CHARACTERISTIC_ID, pq_commands
+from .constants import BMS_CHARACTERISTIC_ID, pq_commands
 
 
 class BatteryInfo:
