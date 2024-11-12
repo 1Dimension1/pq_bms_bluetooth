@@ -5,6 +5,7 @@ import argparse
 
 from interfaces.battery import BatteryInfo
 
+
 def commands():
     parser = argparse.ArgumentParser()
     parser.add_argument("DEVICE_MAC",
@@ -19,6 +20,7 @@ def commands():
     args = parser.parse_args()
     return args
 
+
 def main():
     args = commands()
 
@@ -32,7 +34,10 @@ def main():
         logger.setLevel(logging.DEBUG)
         logger.addHandler(handler)
 
-    battery = BatteryInfo(args.DEVICE_MAC, args.pair, logger)
+    try:
+        battery = BatteryInfo(args.DEVICE_MAC, args.pair, logger)
+    except Exception as e:
+        print(f"An error occurred in BatteryInfo: {e}")
 
     if args.services:
         request = battery.get_request()

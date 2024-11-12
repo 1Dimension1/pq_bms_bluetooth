@@ -53,11 +53,15 @@ class BatteryInfo:
         else:
             self._logger = logging.getLogger(__name__)
 
-        self._request = Request(
-            bluetooth_device_mac,
-            pair_device=pair_device,
-            logger=self._logger
-        )
+        try:
+            self._request = Request(
+                bluetooth_device_mac,
+                pair_device=pair_device,
+                logger=self._logger
+            )
+        except Exception as e:
+            self._logger.error("Failed to initialize Request: %s", e)
+            raise
 
     def get_request(self):
         '''
