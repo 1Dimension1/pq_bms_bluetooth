@@ -1,7 +1,7 @@
 import json
 import asyncio
 import logging
-from request import Request
+from src.request import Request
 
 class BatteryInfo:
     '''
@@ -90,8 +90,6 @@ class BatteryInfo:
         state = self.__dict__
         del state['_logger']
         del state['_request']
-        state['SOC'] = f"{self.SOC}%"
-        state['SOH'] = f"{self.SOH}%"
 
         return json.dumps(
             state,
