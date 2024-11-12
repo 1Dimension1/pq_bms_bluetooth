@@ -1,7 +1,7 @@
 import json
 import asyncio
 import logging
-from src.request import Request
+from request import Request
 
 class BatteryInfo:
     '''
