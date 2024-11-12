@@ -2,7 +2,7 @@ import json
 import asyncio
 import logging
 
-from bluetooth.request import Request
+from interfaces.bluetooth.request import Request
 from constants import BMS_CHARACTERISTIC_ID, pq_commands
 
 
