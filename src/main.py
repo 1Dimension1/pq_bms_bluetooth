@@ -2,7 +2,8 @@ import sys
 import asyncio
 import logging
 import argparse
-from battery import BatteryInfo
+
+from interfaces.battery import BatteryInfo
 
 def commands():
     parser = argparse.ArgumentParser()

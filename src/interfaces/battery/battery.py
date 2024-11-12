@@ -1,7 +1,8 @@
 import json
 import asyncio
 import logging
-from request import Request
+
+from bluetooth.request import Request
 
 class BatteryInfo:
     '''
