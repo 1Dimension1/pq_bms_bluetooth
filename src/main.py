@@ -5,7 +5,10 @@ import argparse
 import os
 
 from interfaces.battery import BatteryInfo
-from interfaces.homeassistant.mqtt import MqttClient, MQTTConfig
+from interfaces.connections import MqttClient, MQTTConfig
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def commands():
@@ -18,8 +21,7 @@ def commands():
     parser.add_argument("--mqtt", help="Send BMS info to MQTT server", action="store_true")
     parser.add_argument("--pair", help="Pair with device before interacting", action="store_true")
     parser.add_argument("-s", "--services", help="List device GATT services and characteristics", action="store_true")
-    parser.add_argument("--verbose", help="Verbose logs", action="store_true")
-
+    parser.add_argument("-v", "--verbose", help="Verbose logs", action="store_true")
 
     args = parser.parse_args()
     return args
@@ -35,8 +37,11 @@ def main():
         handler = logging.StreamHandler(sys.stdout)
         formatter = logging.Formatter('%(asctime)s [%(funcName)s] %(message)s')
         handler.setFormatter(formatter)
+
         logger = logging.getLogger(__name__)
-        logger.setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(levelname)-8s: %(message)s',
+                            datefmt='%y-%m-%d %H:%M:%S')
         logger.addHandler(handler)
 
     try:
@@ -52,9 +57,13 @@ def main():
     if args.bms:
         battery.read_bms()
         data = battery.get_json()
-        print(data)
+        logger.info(data)
 
     if args.mqtt:
+        if not data:
+            logger.error('No data available for MQTT')
+            return
+
         config = MQTTConfig(
             broker=os.getenv('MQTT_BROKER'),  # Default value if env var is not set
             port=int(os.getenv('MQTT_PORT', 1883)),  # Convert to int
@@ -62,7 +71,7 @@ def main():
             client_id=os.getenv('MQTT_CLIENT_ID', 'bms'),  # Default client ID
             username=os.getenv('MQTT_USERNAME', 'mqtt'),  # Default username
             password=os.getenv('MQTT_PASSWORD', '')  # Default password
-        )   
+        )
         MqttClient(config, data)
 
 
