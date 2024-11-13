@@ -57,7 +57,7 @@ def main():
     if args.bms:
         battery.read_bms()
         data = battery.get_json()
-        logger.info(data) if data else None
+        print(data)
 
     if args.mqtt:
         if not data:
