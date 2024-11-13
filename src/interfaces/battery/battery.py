@@ -2,8 +2,9 @@ import json
 import asyncio
 import logging
 
-from interfaces.bluetooth.request import Request
+from interfaces.bluetooth.request import BluetoothRequest
 from .constants import BMS_CHARACTERISTIC_ID, pq_commands
+from .types import BatteryManagementSystem
 
 
 class BatteryInfo:
@@ -18,35 +19,8 @@ class BatteryInfo:
                  bluetooth_device_mac: str,
                  pair_device: bool = False,
                  logger=None):
-        self.packVoltage = None
-        self.voltage = None
-        self.batteryPack: dict = {}
-        self.current = None
-        self.watt = None
-        self.remainAh = None
-        self.factoryAh = None
-        self.cellTemperature = None
-        self.mosfetTemperature = None
-        self.heat = None
-        self.protectState = None
-        self.failureState = None
-        self.equilibriumState = None
-        self.batteryState = None
-        self.SOC = None
-        self.SOH = None
-        self.dischargesCount = None
-        self.dischargesAHCount = None
-
-        self.firmwareVersion = None
-        self.manfactureDate = None
-        self.hardwareVersion = None
-
-        # Human readable battery status
-        self.battery_status = None
-        self.balance_status = None
-        self.cell_status = None
-        self.bms_status = None
-        self.heat_status = None
+        
+        self.bms = BatteryManagementSystem()
 
         if logger:
             self._logger = logger
@@ -54,7 +28,7 @@ class BatteryInfo:
             self._logger = logging.getLogger(__name__)
 
         try:
-            self._request = Request(
+            self._request = BluetoothRequest(
                 bluetooth_device_mac,
                 pair_device=pair_device,
                 logger=self._logger
@@ -101,8 +75,8 @@ class BatteryInfo:
         '''
           Parse battery info from bytearray
         '''
-        self.packVoltage = int.from_bytes(data[8:12][::-1], byteorder='big')
-        self.voltage = int.from_bytes(data[12:16][::-1], byteorder='big')
+        self.bms.packVoltage = int.from_bytes(data[8:12][::-1], byteorder='big')
+        self.bms.voltage = int.from_bytes(data[12:16][::-1], byteorder='big')
 
         cell = 1
         batPack = data[16:48]
@@ -111,68 +85,68 @@ class BatteryInfo:
                 continue
 
             cellVoltage = int.from_bytes([batPack[key + 1], dt], byteorder='big')
-            self.batteryPack[cell] = cellVoltage/1000
+            self.bms.batteryPack[cell] = cellVoltage/1000
             cell += 1
 
         # Load \ Unload current A
         current = int.from_bytes(data[48:52][::-1], byteorder='big', signed=True)
-        self.current = round(current / 1000, 2)
+        self.bms.current = round(current / 1000, 2)
 
         # Calculated load \ unload Watt
-        self.watt = round((self.voltage * +current) / 10000, 1) / 100
+        self.bms.watt = round((self.voltage * +current) / 10000, 1) / 100
 
         # Remain Ah
         remainAh = int.from_bytes(data[62:64][::-1], byteorder='big')
-        self.remainAh = round(remainAh/100, 2)
+        self.bms.remainAh = round(remainAh/100, 2)
 
         # Factory Ah
         fccAh = int.from_bytes(data[64:66][::-1], byteorder='big')
-        self.factoryAh = round(fccAh/100, 2)
+        self.bms.factoryAh = round(fccAh/100, 2)
 
         # Temperature
-        self.cellTemperature = int.from_bytes(data[52:54][::-1], byteorder='big')
-        self.mosfetTemperature = int.from_bytes(data[54:56][::-1], byteorder='big')
+        self.bms.cellTemperature = int.from_bytes(data[52:54][::-1], byteorder='big')
+        self.bms.mosfetTemperature = int.from_bytes(data[54:56][::-1], byteorder='big')
 
-        self.heat = list(data[68:72][::-1])
+        self.bms.heat = list(data[68:72][::-1])
 
-        self.protectState = list(data[76:80][::-1])
-        self.failureState = list(data[80:84][::-1])
+        self.bms.protectState = list(data[76:80][::-1])
+        self.bms.failureState = list(data[80:84][::-1])
         self.equilibriumState = int.from_bytes(data[84:88][::-1], byteorder='big')
-        self.batteryState = int.from_bytes(data[88:90][::-1], byteorder='big')
+        self.bms.batteryState = int.from_bytes(data[88:90][::-1], byteorder='big')
 
         # Charge level
-        self.SOC = int.from_bytes(data[90:92][::-1], byteorder='big')
+        self.bms.SOC = int.from_bytes(data[90:92][::-1], byteorder='big')
 
         # Battery Status ??
-        self.SOH = int.from_bytes(data[92:96][::-1], byteorder='big')
+        self.bms.SOH = int.from_bytes(data[92:96][::-1], byteorder='big')
 
-        self.dischargesCount = int.from_bytes(data[96:100][::-1], byteorder='big')
+        self.bms.dischargesCount = int.from_bytes(data[96:100][::-1], byteorder='big')
 
         # Discharge AH times
-        self.dischargesAHCount = int.from_bytes(data[100:104][::-1], byteorder='big')
+        self.bms.dischargesAHCount = int.from_bytes(data[100:104][::-1], byteorder='big')
 
         # Additional human readable statuses
-        self.battery_status = self.get_battery_status()
+        self.bms.battery_status = self.get_battery_status()
 
-        if self.equilibriumState > 0:
-            self.balance_status = "Battery cells are being balanced for better performance."
+        if self.bms.equilibriumState > 0:
+            self.bms.balance_status = "Battery cells are being balanced for better performance."
         else:
-            self.balance_status = "All cells are well-balanced."
+            self.bms.balance_status = "All cells are well-balanced."
 
-        if self.failureState[0] > 0 or self.failureState[1] > 0:
-            self.cell_status = "Fault alert! There may be a problem with cell."
+        if self.bms.failureState[0] > 0 or self.bms.failureState[1] > 0:
+            self.bms.cell_status = "Fault alert! There may be a problem with cell."
         else:
-            self.cell_status = "Battery is in optimal working condition."
+            self.bms.cell_status = "Battery is in optimal working condition."
 
     def parse_version(self, data):
         '''
           Parse firmware version from bytearray
         '''
         start = data[8:]
-        self.firmwareVersion = (f"{int.from_bytes(start[0:2][::-1], byteorder='big')}"
+        self.bms.firmwareVersion = (f"{int.from_bytes(start[0:2][::-1], byteorder='big')}"
                                 f".{int.from_bytes(start[2:4][::-1], byteorder='big')}"
                                 f".{int.from_bytes(start[4:6][::-1], byteorder='big')}")
-        self.manfactureDate = (f"{int.from_bytes(start[6:8][::-1], byteorder='big')}"
+        self.bms.manfactureDate = (f"{int.from_bytes(start[6:8][::-1], byteorder='big')}"
                                f"-{int(start[8])}"
                                f"-{int(start[9])}")
 
@@ -182,7 +156,7 @@ class BatteryInfo:
             if 32 <= ver <= 126:
                 vers += chr(ver)
 
-        self.hardwareVersion = vers
+        self.bms.hardwareVersion = vers
 
     def parse_serial_number(self, data):
         '''
@@ -196,14 +170,14 @@ class BatteryInfo:
           Return human readable battery status
         '''
         status = ''
-        if self.current == 0:
+        if self.bms.current == 0:
             status = "Standby"
-        elif self.current > 0:
+        elif self.bms.current > 0:
             status = "Charging"
-        elif self.current < 0:
+        elif self.bms.current < 0:
             status = "Discharging"
 
-        if self.SOC >= 100 or self.batteryState == 4:
-            status = "Full Charge"
+        if self.bms.SOC >= 100 or self.bms.batteryState == 4:
+            status = "Fully charged"
 
         return status
