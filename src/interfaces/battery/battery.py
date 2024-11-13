@@ -111,7 +111,7 @@ class BatteryInfo:
 
         self.bms.protectState = list(data[76:80][::-1])
         self.bms.failureState = list(data[80:84][::-1])
-        self.equilibriumState = int.from_bytes(data[84:88][::-1], byteorder='big')
+        self.bms.equilibriumState = int.from_bytes(data[84:88][::-1], byteorder='big')
         self.bms.batteryState = int.from_bytes(data[88:90][::-1], byteorder='big')
 
         # Charge level

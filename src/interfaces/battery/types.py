@@ -10,17 +10,17 @@ class BatteryManagementSystem:
         self.watt: float = None
         self.remainAh: float = None
         self.factoryAh: float = None
-        self.cellTemperature: float = None
-        self.mosfetTemperature: float = None
-        self.heat: float = None
-        self.protectState: str = None
-        self.failureState: str = None
-        self.equilibriumState: str = None
-        self.batteryState: str = None
-        self.SOC: float = None
-        self.SOH: float = None
+        self.cellTemperature: int = None
+        self.mosfetTemperature: int = None
+        self.heat: list = None
+        self.protectState: list = None
+        self.failureState: list = None
+        self.equilibriumState: int = None
+        self.batteryState: int = None
+        self.SOC: int = None
+        self.SOH: int = None
         self.dischargesCount: int = None
-        self.dischargesAHCount: float = None
+        self.dischargesAHCount: int = None
 
         self.firmwareVersion: str = None
         self.manfactureDate: str = None
