@@ -10,7 +10,7 @@ class Request:
         self.bluetooth_device_mac = bluetooth_device_mac
         self.pair = pair_device
         self.callback_func = None
-        self.bluetooth_timeout = 2
+        self.bluetooth_timeout = 4
 
         if logger:
             self.logger = logger
@@ -21,7 +21,7 @@ class Request:
         '''
           Send single command to device
         '''
-        await self.bulk_send(characteristic_id, commands_parsers={ command: callback_func })
+        await self.bulk_send(characteristic_id, commands_parsers={command: callback_func})
 
     async def bulk_send(self, characteristic_id: str, commands_parsers: dict) -> None:
         '''
@@ -50,7 +50,6 @@ class Request:
             client.unpair()
         await client.disconnect()
         self.logger.info("Disconnected %s", self.bluetooth_device_mac)
-
 
     async def print_services(self):
         '''
