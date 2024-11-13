@@ -23,6 +23,7 @@ class MqttClient:
             self.client.enable_logger()
 
         self.client.on_connect = self.on_connect
+        self.client.on_publish = self.on_publish
 
         self.connect()
         self.client.loop_forever()
@@ -39,7 +40,7 @@ class MqttClient:
         logger.info('Message published')
         logger.debug(payload)
 
-    def on_connect(self, client, userdata, flags, rc):
+    def on_connect(self, client, userdata, connect_flags, rc, properties):
         logger.info(f"Connected with result code {rc}")
         if rc == 0:
             self.publish(f"{self.config.topic}/data", json.dumps(self.data))
@@ -47,6 +48,6 @@ class MqttClient:
         else:
             logger.error(f"Connection failed with result code {rc}")
 
-    def on_publish(self, client, userdata, mid):
+    def on_publish(self, client, userdata, mid, reason_code, properties):
         logger.info(f"Message published with mid: {mid}")
-        self.client.disconnect()
+        client.disconnect()
