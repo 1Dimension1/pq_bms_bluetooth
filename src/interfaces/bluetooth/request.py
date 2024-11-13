@@ -5,7 +5,7 @@ from typing import Callable
 from bleak import BleakClient, BleakGATTCharacteristic
 
 
-class Request:
+class BluetoothRequest:
     def __init__(self, bluetooth_device_mac: str, pair_device=False, logger=None):
         self.bluetooth_device_mac = bluetooth_device_mac
         self.pair = pair_device
@@ -16,6 +16,8 @@ class Request:
             self.logger = logger
         else:
             self.logger = logging.getLogger(__name__)
+
+        self.logger.debug('Initialized BluetoothRequest')
 
     async def send(self, characteristic_id: str, command: str, callback_func: Callable) -> None:
         '''
