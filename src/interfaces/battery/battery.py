@@ -93,7 +93,7 @@ class BatteryInfo:
         self.bms.current = round(current / 1000, 2)
 
         # Calculated load \ unload Watt
-        self.bms.watt = round((self.voltage * +current) / 10000, 1) / 100
+        self.bms.watt = round((self.bms.voltage * +current) / 10000, 1) / 100
 
         # Remain Ah
         remainAh = int.from_bytes(data[62:64][::-1], byteorder='big')
